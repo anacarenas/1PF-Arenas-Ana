@@ -1,0 +1,94 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Alumno } from 'src/app/models/alumno';
+import { AlumnoService } from 'src/app/services/alumno.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router, ActivatedRoute } from '@angular/router';
+import { MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/radio';
+
+
+@Component({
+  selector: 'app-add-edit-alumno',
+  templateUrl: './add-edit-alumno.component.html',
+  styleUrls: ['./add-edit-alumno.component.css']
+})
+export class AddEditAlumnoComponent implements OnInit {
+  estados: any[] = ['Masculino', 'Femenino'];
+  idAlumno: any;
+  accion = 'Crear';
+  myForm : FormGroup;
+
+  constructor(private fb: FormBuilder,
+              private AlumnoService: AlumnoService, 
+              private route: Router,
+              private snackBar: MatSnackBar,
+              private aRoute: ActivatedRoute) { 
+    this.myForm = this.fb.group({
+      nombres: ['', [Validators.required, Validators.maxLength(20)]],
+      apellidos: ['', [Validators.required, Validators.maxLength(20)]],
+      correo: ['',  [Validators.required, Validators.email]],
+      telefono: ['', [Validators.required]],
+      estado: ['', [Validators.required]]
+    });
+    const idParam = 'id';
+    this.idAlumno = this.aRoute.snapshot.params[idParam];
+
+  }
+  ngOnInit(): void {
+    if (this.idAlumno !== undefined) {
+      this.accion = 'Editar';
+      this.esEditar();
+    }
+  }
+
+  guardarAlumno() {
+      const Alumno: Alumno = {
+      nombres: this.myForm.get('nombres')!.value,
+      apellidos: this.myForm.get('apellidos')!.value,
+      correo: this.myForm.get('correo')!.value,
+      telefono: this.myForm.get('telefono')!.value,
+      estado: this.myForm.get('estado')!.value,
+    };
+
+    if (this.idAlumno !== undefined) {
+      this.editarAlumno(Alumno);
+    } else {
+      this.agregarAlumno(Alumno);
+    }
+  }
+
+  agregarAlumno(Alumno: Alumno) {
+    this.AlumnoService.agregarAlumno(Alumno);
+    this.snackBar.open('El Alumno fue registrado con exito!', '', {
+      duration: 3000
+    });
+    this.route.navigate(['/']);
+  }
+
+  editarAlumno(Alumno: Alumno) {
+    this.AlumnoService.editAlumno(Alumno, this.idAlumno);
+    this.snackBar.open('El Alumno fue actualizado con exito!', '', {
+      duration: 3000
+    });
+    this.route.navigate(['/']);
+  }
+
+  esEditar() {
+    const Alumno: Alumno = this.AlumnoService.getAlumno(this.idAlumno);
+    console.log(Alumno);
+    this.myForm.patchValue({
+      nombres: Alumno.nombres,
+      apellidos: Alumno.apellidos,
+      correo: Alumno.correo,
+      telefono: Alumno.telefono,
+      estado: Alumno.estado,
+    });
+  }
+  get nombreInvalido() {
+    return this.myForm.get('nombres')?.hasError('required') && this.myForm.get('nombres')?.touched;
+  }
+  get apellidoInvalido() {
+    return this.myForm.get('apellidos')?.hasError('required') && this.myForm.get('apellidos')?.touched;
+  }
+
+}
