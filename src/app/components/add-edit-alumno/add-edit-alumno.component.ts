@@ -26,8 +26,8 @@ export class AddEditAlumnoComponent implements OnInit {
     this.myForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.maxLength(20)]],
       apellidos: ['', [Validators.required, Validators.maxLength(20)]],
-      correo: ['',  [Validators.required, Validators.email]],
-      telefono: ['', [Validators.required]],
+      correo: ['',  [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$')]],
+      telefono: ['', [Validators.required, Validators.pattern('[- +()0-9]+')]],
       estado: ['', [Validators.required]]
     });
     const idParam = 'id';
